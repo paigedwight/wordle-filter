@@ -105,7 +105,11 @@ export default function WordleFilter() {
                         style={{
                             textAlign: "center",
                         }}
-                        onChange={(e) => setGuessText(e.target.value)}
+                        onChange={(e) => {
+                            if (e.target.value.length <= maxGuessLength) {
+                                setGuessText(e.target.value);
+                            }
+                        }}
                         maxLength={maxGuessLength}
                         value={guessText}
                     />
