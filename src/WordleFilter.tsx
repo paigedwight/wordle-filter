@@ -44,10 +44,11 @@ export default function WordleFilter() {
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (guessText.length === maxGuessLength) {
+            const normalizedGuessText = guessText.toLowerCase();
             const existingWords = guesses.map((guess) => guess.word);
 
-            if (!existingWords.includes(guessText)) {
-                setGuesses([...guesses, makeGuess(guessText)]);
+            if (!existingWords.includes(normalizedGuessText)) {
+                setGuesses([...guesses, makeGuess(normalizedGuessText)]);
             }
 
             setGuessText("");
@@ -59,7 +60,6 @@ export default function WordleFilter() {
         const status = guess.letters[letterIndex].status;
 
         guess.letters[letterIndex].status = nextStatus(status);
-
         guesses[guessIndex] = guess;
 
         setGuesses([...guesses]);
