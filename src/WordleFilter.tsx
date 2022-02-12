@@ -65,7 +65,7 @@ export default function WordleFilter() {
         setGuesses([...guesses]);
     }
 
-    function speculate(guesses: Guess[]): string[] {
+    function eliminate(guesses: Guess[]): string[] {
         let remainingWords = [...wordList];
         guesses.forEach((guess) => {
             guess.letters.forEach((guessLetter, index) => {
@@ -90,12 +90,11 @@ export default function WordleFilter() {
         return remainingWords;
     }
 
-    const possibilities = speculate(guesses);
+    const possibilities = eliminate(guesses);
 
     return (
         <Col
             style={{
-                paddingTop: "200px",
                 textAlign: "center",
             }}
         >
