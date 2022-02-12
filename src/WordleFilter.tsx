@@ -95,10 +95,8 @@ export default function WordleFilter() {
     return (
         <Col
             style={{
-                // display: "flex",
                 paddingTop: "200px",
                 textAlign: "center",
-                // justifyContent: "center",
             }}
         >
             <Form onSubmit={onSubmit}>
