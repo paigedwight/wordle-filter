@@ -4,7 +4,7 @@ import WordleFilter from "./WordleFilter";
 
 export default function App() {
     return (
-        <Container>
+        <Container style={{ maxWidth: "400px" }}>
             <WordleFilter />
         </Container>
     );

@@ -103,7 +103,6 @@ export default function WordleFilter() {
                 <Row className={"mb-3 justify-content-center"}>
                     <Form.Control
                         style={{
-                            width: "300px",
                             textAlign: "center",
                         }}
                         onChange={(e) => setGuessText(e.target.value)}
