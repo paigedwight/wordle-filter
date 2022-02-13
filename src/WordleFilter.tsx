@@ -116,7 +116,13 @@ export default function WordleFilter() {
                 {guesses.map((guess, guessIndex) => (
                     <Row className="mb-3" key={guess.word}>
                         {range(maxGuessLength).map((letterIndex) => (
-                            <Col key={letterIndex}>
+                            <Col
+                                style={{
+                                    paddingLeft: "2px",
+                                    paddingRight: "2px",
+                                }}
+                                key={letterIndex}
+                            >
                                 <Button
                                     onClick={() => {
                                         onClickLetter(guessIndex, letterIndex);
