@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Col, Form, Row, Button } from 'react-bootstrap';
 import wordList from './wordle/wordList';
 
+const maxGuessLength = 5;
 type GuessLetterStatus = 'correct' | 'included' | 'not-included';
 
 type GuessLetter = {
@@ -28,27 +29,64 @@ function nextStatus(status: GuessLetterStatus): GuessLetterStatus {
     }
 }
 
-function makeGuess(text: string, prevLetters: GuessLetter[]): Guess {
+function bgColour(guessLetter?: GuessLetter) {
+    return guessLetter === undefined
+        ? '#86888a'
+        : guessLetter.letter === '_'
+        ? '#ddd'
+        : guessLetter.status === 'correct'
+        ? '#6aaa64'
+        : guessLetter.status === 'included'
+        ? '#c9b458'
+        : '#86888a';
+}
+
+function makeGuess(word: string, prevLetters: GuessLetter[]): Guess {
+    const letters: GuessLetter[] = word.split('').map((letter, index) => ({
+        letter,
+        status: prevLetters[index] && prevLetters[index].letter === letter ? prevLetters[index].status : 'not-included',
+    }));
     return {
-        word: text,
-        letters:
-            text.length === 0
-                ? []
-                : [
-                      ...prevLetters,
-                      {
-                          letter: text[text.length - 1],
-                          status: 'not-included',
-                      },
-                  ],
+        word,
+        letters,
     };
+}
+
+type GuessRowOnClick = (letterIndex: number) => void;
+function GuessRow({ guess, onClick }: { guess: Guess; onClick: GuessRowOnClick }) {
+    return (
+        <Row className="mb-3">
+            {range(maxGuessLength).map(letterIndex => {
+                return (
+                    <Col
+                        style={{
+                            paddingLeft: '2px',
+                            paddingRight: '2px',
+                        }}
+                        key={letterIndex}
+                    >
+                        <Button
+                            onClick={() => onClick(letterIndex)}
+                            style={{
+                                backgroundColor: bgColour(guess.letters[letterIndex]),
+                                border: '1px solid black',
+                                height: '50px',
+                                textTransform: 'uppercase',
+                                width: '50px',
+                            }}
+                        >
+                            {guess.letters[letterIndex] === undefined ? '' : guess.letters[letterIndex].letter}
+                        </Button>
+                    </Col>
+                );
+            })}
+        </Row>
+    );
 }
 
 export default function WordleFilter() {
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentGuess, setCurrentGuess] = useState<Guess>(makeGuess('', []));
-
-    const maxGuessLength = 5;
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -57,7 +95,7 @@ export default function WordleFilter() {
             const existingWords = guesses.map(guess => guess.word);
 
             if (!existingWords.includes(normalizedGuessText)) {
-                setGuesses([...guesses, { ...currentGuess }]);
+                setGuesses([{ ...currentGuess }, ...guesses]);
             }
 
             setCurrentGuess(makeGuess('', []));
@@ -78,6 +116,8 @@ export default function WordleFilter() {
         let remainingWords = [...wordList];
         [...guesses, currentGuess].forEach(guess => {
             guess.letters.forEach((guessLetter, index) => {
+                if (guessLetter.letter === '_') return;
+
                 if (guessLetter.status === 'correct') {
                     remainingWords = remainingWords.filter(word => word.charAt(index) === guessLetter.letter);
                 } else if (guessLetter.status === 'included') {
@@ -106,96 +146,42 @@ export default function WordleFilter() {
                     <Form.Control
                         style={{
                             textAlign: 'center',
+                            textTransform: 'uppercase',
                         }}
                         onChange={e => {
-                            if (e.target.value.length <= maxGuessLength) {
-                                setCurrentGuess(makeGuess(e.target.value, currentGuess.letters));
+                            const newValue = e.target.value.replace(/ /g, '_').toLowerCase();
+                            if (newValue.length <= maxGuessLength && /^[a-z_]*$/.test(newValue)) {
+                                setCurrentGuess(makeGuess(newValue, currentGuess.letters));
                             }
                         }}
                         maxLength={maxGuessLength}
                         value={currentGuess.word}
+                        autoCorrect="off"
                     />
                 </Row>
-                <Row className="mb-3">
-                    {range(maxGuessLength).map(letterIndex => {
-                        return (
-                            <Col
-                                style={{
-                                    paddingLeft: '2px',
-                                    paddingRight: '2px',
-                                }}
-                                key={letterIndex}
-                            >
-                                <Button
-                                    onClick={() => {
-                                        if (letterIndex < currentGuess.word.length) {
-                                            const status = currentGuess.letters[letterIndex].status;
+                <GuessRow
+                    guess={currentGuess}
+                    onClick={letterIndex => {
+                        if (currentGuess.letters[letterIndex] !== undefined) {
+                            const status = currentGuess.letters[letterIndex].status;
 
-                                            const nextGuess = {
-                                                word: currentGuess.word,
-                                                letters: [...currentGuess.letters],
-                                            };
-                                            nextGuess.letters[letterIndex].status = nextStatus(status);
-                                            setCurrentGuess(nextGuess);
-                                        }
-                                    }}
-                                    style={{
-                                        backgroundColor:
-                                            currentGuess.letters[letterIndex] === undefined
-                                                ? '#86888a'
-                                                : currentGuess.letters[letterIndex] &&
-                                                  currentGuess.letters[letterIndex].status === 'correct'
-                                                ? '#6aaa64'
-                                                : currentGuess.letters[letterIndex] &&
-                                                  currentGuess.letters[letterIndex].status === 'included'
-                                                ? '#c9b458'
-                                                : '#86888a',
-                                        border: '1px solid black',
-                                        height: '50px',
-                                        textTransform: 'uppercase',
-                                        width: '50px',
-                                    }}
-                                >
-                                    {letterIndex < currentGuess.word.length
-                                        ? currentGuess.letters[letterIndex].letter
-                                        : ''}
-                                </Button>
-                            </Col>
-                        );
-                    })}
-                </Row>
+                            const nextGuess = {
+                                word: currentGuess.word,
+                                letters: [...currentGuess.letters],
+                            };
+                            nextGuess.letters[letterIndex].status = nextStatus(status);
+                            setCurrentGuess(nextGuess);
+                        }
+                    }}
+                />
                 {guesses.map((guess, guessIndex) => (
-                    <Row className="mb-3" key={guess.word}>
-                        {range(maxGuessLength).map(letterIndex => (
-                            <Col
-                                style={{
-                                    paddingLeft: '2px',
-                                    paddingRight: '2px',
-                                }}
-                                key={letterIndex}
-                            >
-                                <Button
-                                    onClick={() => {
-                                        onClickLetter(guessIndex, letterIndex);
-                                    }}
-                                    style={{
-                                        backgroundColor:
-                                            guess.letters[letterIndex].status === 'correct'
-                                                ? '#6aaa64'
-                                                : guess.letters[letterIndex].status === 'included'
-                                                ? '#c9b458'
-                                                : '#86888a',
-                                        border: '1px solid black',
-                                        height: '50px',
-                                        textTransform: 'uppercase',
-                                        width: '50px',
-                                    }}
-                                >
-                                    {guess.letters[letterIndex].letter}
-                                </Button>
-                            </Col>
-                        ))}
-                    </Row>
+                    <GuessRow
+                        key={guess.word}
+                        guess={guess}
+                        onClick={letterIndex => {
+                            onClickLetter(guessIndex, letterIndex);
+                        }}
+                    />
                 ))}
             </Form>
             <p>{possibilities.join(', ')}</p>
