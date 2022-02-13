@@ -1,9 +1,11 @@
-import range from "lodash/range";
-import { useState } from "react";
-import { Col, Form, Row, Button } from "react-bootstrap";
-import wordList from "./wordle/wordList";
+/** @format */
 
-type GuessLetterStatus = "correct" | "included" | "not-included";
+import range from 'lodash/range';
+import { useState } from 'react';
+import { Col, Form, Row, Button } from 'react-bootstrap';
+import wordList from './wordle/wordList';
+
+type GuessLetterStatus = 'correct' | 'included' | 'not-included';
 
 type GuessLetter = {
     letter: string;
@@ -17,41 +19,48 @@ type Guess = {
 
 function nextStatus(status: GuessLetterStatus): GuessLetterStatus {
     switch (status) {
-        case "not-included":
-            return "included";
-        case "included":
-            return "correct";
-        case "correct":
-            return "not-included";
+        case 'not-included':
+            return 'included';
+        case 'included':
+            return 'correct';
+        case 'correct':
+            return 'not-included';
     }
 }
 
-function makeGuess(text: string): Guess {
+function makeGuess(text: string, prevLetters: GuessLetter[]): Guess {
     return {
         word: text,
-        letters: text
-            .split("")
-            .map((letter: string) => ({ letter, status: "not-included" })),
+        letters:
+            text.length === 0
+                ? []
+                : [
+                      ...prevLetters,
+                      {
+                          letter: text[text.length - 1],
+                          status: 'not-included',
+                      },
+                  ],
     };
 }
 
 export default function WordleFilter() {
     const [guesses, setGuesses] = useState<Guess[]>([]);
-    const [guessText, setGuessText] = useState("");
+    const [currentGuess, setCurrentGuess] = useState<Guess>(makeGuess('', []));
 
     const maxGuessLength = 5;
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (guessText.length === maxGuessLength) {
-            const normalizedGuessText = guessText.toLowerCase();
-            const existingWords = guesses.map((guess) => guess.word);
+        if (currentGuess.word.length === maxGuessLength) {
+            const normalizedGuessText = currentGuess.word.toLowerCase();
+            const existingWords = guesses.map(guess => guess.word);
 
             if (!existingWords.includes(normalizedGuessText)) {
-                setGuesses([...guesses, makeGuess(normalizedGuessText)]);
+                setGuesses([...guesses, { ...currentGuess }]);
             }
 
-            setGuessText("");
+            setCurrentGuess(makeGuess('', []));
         }
     }
 
@@ -67,22 +76,16 @@ export default function WordleFilter() {
 
     function eliminate(guesses: Guess[]): string[] {
         let remainingWords = [...wordList];
-        guesses.forEach((guess) => {
+        [...guesses, currentGuess].forEach(guess => {
             guess.letters.forEach((guessLetter, index) => {
-                if (guessLetter.status === "correct") {
+                if (guessLetter.status === 'correct') {
+                    remainingWords = remainingWords.filter(word => word.charAt(index) === guessLetter.letter);
+                } else if (guessLetter.status === 'included') {
                     remainingWords = remainingWords.filter(
-                        (word) => word.charAt(index) === guessLetter.letter
+                        word => word.charAt(index) !== guessLetter.letter && word.includes(guessLetter.letter),
                     );
-                } else if (guessLetter.status === "included") {
-                    remainingWords = remainingWords.filter(
-                        (word) =>
-                            word.charAt(index) !== guessLetter.letter &&
-                            word.includes(guessLetter.letter)
-                    );
-                } else if (guessLetter.status === "not-included") {
-                    remainingWords = remainingWords.filter(
-                        (word) => !word.includes(guessLetter.letter)
-                    );
+                } else if (guessLetter.status === 'not-included') {
+                    remainingWords = remainingWords.filter(word => !word.includes(guessLetter.letter));
                 }
             });
         });
@@ -95,31 +98,79 @@ export default function WordleFilter() {
     return (
         <Col
             style={{
-                textAlign: "center",
+                textAlign: 'center',
             }}
         >
             <Form onSubmit={onSubmit}>
-                <Row className={"mb-3 justify-content-center"}>
+                <Row className={'mb-3 justify-content-center'}>
                     <Form.Control
                         style={{
-                            textAlign: "center",
+                            textAlign: 'center',
                         }}
-                        onChange={(e) => {
+                        onChange={e => {
                             if (e.target.value.length <= maxGuessLength) {
-                                setGuessText(e.target.value);
+                                setCurrentGuess(makeGuess(e.target.value, currentGuess.letters));
                             }
                         }}
                         maxLength={maxGuessLength}
-                        value={guessText}
+                        value={currentGuess.word}
                     />
+                </Row>
+                <Row className="mb-3">
+                    {range(maxGuessLength).map(letterIndex => {
+                        return (
+                            <Col
+                                style={{
+                                    paddingLeft: '2px',
+                                    paddingRight: '2px',
+                                }}
+                                key={letterIndex}
+                            >
+                                <Button
+                                    onClick={() => {
+                                        if (letterIndex < currentGuess.word.length) {
+                                            const status = currentGuess.letters[letterIndex].status;
+
+                                            const nextGuess = {
+                                                word: currentGuess.word,
+                                                letters: [...currentGuess.letters],
+                                            };
+                                            nextGuess.letters[letterIndex].status = nextStatus(status);
+                                            setCurrentGuess(nextGuess);
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor:
+                                            currentGuess.letters[letterIndex] === undefined
+                                                ? '#86888a'
+                                                : currentGuess.letters[letterIndex] &&
+                                                  currentGuess.letters[letterIndex].status === 'correct'
+                                                ? '#6aaa64'
+                                                : currentGuess.letters[letterIndex] &&
+                                                  currentGuess.letters[letterIndex].status === 'included'
+                                                ? '#c9b458'
+                                                : '#86888a',
+                                        border: '1px solid black',
+                                        height: '50px',
+                                        textTransform: 'uppercase',
+                                        width: '50px',
+                                    }}
+                                >
+                                    {letterIndex < currentGuess.word.length
+                                        ? currentGuess.letters[letterIndex].letter
+                                        : ''}
+                                </Button>
+                            </Col>
+                        );
+                    })}
                 </Row>
                 {guesses.map((guess, guessIndex) => (
                     <Row className="mb-3" key={guess.word}>
-                        {range(maxGuessLength).map((letterIndex) => (
+                        {range(maxGuessLength).map(letterIndex => (
                             <Col
                                 style={{
-                                    paddingLeft: "2px",
-                                    paddingRight: "2px",
+                                    paddingLeft: '2px',
+                                    paddingRight: '2px',
                                 }}
                                 key={letterIndex}
                             >
@@ -129,17 +180,15 @@ export default function WordleFilter() {
                                     }}
                                     style={{
                                         backgroundColor:
-                                            guess.letters[letterIndex]
-                                                .status === "correct"
-                                                ? "#6aaa64"
-                                                : guess.letters[letterIndex]
-                                                      .status === "included"
-                                                ? "#c9b458"
-                                                : "#86888a",
-                                        border: "1px solid black",
-                                        height: "50px",
-                                        textTransform: "uppercase",
-                                        width: "50px",
+                                            guess.letters[letterIndex].status === 'correct'
+                                                ? '#6aaa64'
+                                                : guess.letters[letterIndex].status === 'included'
+                                                ? '#c9b458'
+                                                : '#86888a',
+                                        border: '1px solid black',
+                                        height: '50px',
+                                        textTransform: 'uppercase',
+                                        width: '50px',
                                     }}
                                 >
                                     {guess.letters[letterIndex].letter}
@@ -149,7 +198,7 @@ export default function WordleFilter() {
                     </Row>
                 ))}
             </Form>
-            <p>{possibilities.join(", ")}</p>
+            <p>{possibilities.join(', ')}</p>
         </Col>
     );
 }
