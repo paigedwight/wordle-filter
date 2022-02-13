@@ -2,35 +2,13 @@
 
 import { Guess } from '../types';
 
-// function eliminateCorrect(
-//     words: string[],
-//     letter: string,
-//     index: number,
-// ): string[] {
-//     return words.filter(word => word.charAt(index) === letter);
-// }
-
-// function eliminateIncluded(
-//     words: string[],
-//     letter: string,
-//     index: number,
-// ): string[] {
-//     return words.filter(
-//         word => word.charAt(index) !== letter && word.includes(letter),
-//     );
-// }
-
-// function eliminateNotIncluded(words: string[], letter: string): string[] {
-//     return words.filter(word => !word.includes(letter));
-// }
-
 export default function filterWords(
     allWords: string[],
     guesses: Guess[],
 ): string[] {
     let words = [...allWords];
 
-    guesses.forEach(guess => {
+    guesses.forEach(({ letters }) => {
         words = words.filter(word => {
             let filterResult = true;
 
@@ -39,7 +17,7 @@ export default function filterWords(
                 index,
             }));
 
-            guess.letters.forEach((guessLetter, guessLetterIndex) => {
+            letters.forEach((guessLetter, guessLetterIndex) => {
                 if (filterResult && guessLetter.status === 'correct') {
                     if (word.charAt(guessLetterIndex) !== guessLetter.letter) {
                         filterResult = false;
@@ -52,7 +30,7 @@ export default function filterWords(
                 }
             });
 
-            guess.letters.forEach((guessLetter, guessLetterIndex) => {
+            letters.forEach((guessLetter, guessLetterIndex) => {
                 if (filterResult && guessLetter.status === 'included') {
                     if (word.charAt(guessLetterIndex) === guessLetter.letter) {
                         filterResult = false;
@@ -74,7 +52,7 @@ export default function filterWords(
                 }
             });
 
-            guess.letters.forEach((guessLetter, guessLetterIndex) => {
+            letters.forEach((guessLetter, guessLetterIndex) => {
                 if (filterResult && guessLetter.status === 'not-included') {
                     if (word.charAt(guessLetterIndex) === guessLetter.letter) {
                         filterResult = false;
