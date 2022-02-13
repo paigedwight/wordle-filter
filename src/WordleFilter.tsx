@@ -114,7 +114,7 @@ export default function WordleFilter() {
 
     function eliminate(guesses: Guess[]): string[] {
         let remainingWords = [...wordList];
-        [...guesses, currentGuess].forEach(guess => {
+        [...guesses].forEach(guess => {
             guess.letters.forEach((guessLetter, index) => {
                 if (guessLetter.letter === '_') return;
 
