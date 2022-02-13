@@ -11,3 +11,5 @@ export type Guess = {
     word: string;
     letters: GuessLetter[];
 };
+
+export type GuessRowOnClick = (letterIndex: number) => void;
