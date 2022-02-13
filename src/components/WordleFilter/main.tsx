@@ -68,7 +68,10 @@ export default function WordleFilter() {
         }
     }
 
-    const possibilities = filterWords(wordList, guesses).join(', ');
+    const possibilities = filterWords(wordList, [
+        ...guesses,
+        currentGuess,
+    ]).join(', ');
 
     return (
         <Col

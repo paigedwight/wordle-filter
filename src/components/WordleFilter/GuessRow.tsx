@@ -31,8 +31,8 @@ export default function GuessRow({
                 return (
                     <Col
                         style={{
-                            paddingLeft: '2px',
-                            paddingRight: '2px',
+                            paddingLeft: '0px',
+                            paddingRight: '0px',
                         }}
                         key={letterIndex}
                     >
