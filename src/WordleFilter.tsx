@@ -3,20 +3,10 @@
 import range from 'lodash/range';
 import { useState } from 'react';
 import { Col, Form, Row, Button } from 'react-bootstrap';
+import { Guess, GuessLetter, GuessLetterStatus } from './types';
 import wordList from './wordle/wordList';
 
 const maxGuessLength = 5;
-type GuessLetterStatus = 'correct' | 'included' | 'not-included';
-
-type GuessLetter = {
-    letter: string;
-    status: GuessLetterStatus;
-};
-
-type Guess = {
-    word: string;
-    letters: GuessLetter[];
-};
 
 function nextStatus(status: GuessLetterStatus): GuessLetterStatus {
     switch (status) {
