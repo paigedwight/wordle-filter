@@ -1,10 +1,11 @@
 /** @format */
 
 #root,
+html,
 body {
-    height: 100%;
     background-color: #333333;
     color: #cccccc;
+    height: 100%;
 }
 
 body {
