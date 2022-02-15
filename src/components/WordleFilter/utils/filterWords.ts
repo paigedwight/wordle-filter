@@ -63,16 +63,16 @@ export default function filterWords(
     allWords: string[],
     guesses: Guess[],
 ): string[] {
-    let words = [...allWords];
-
-    guesses.forEach(({ letters }) => {
-        words = words.filter(
-            candidate =>
-                checkCorrect(letters, candidate) &&
-                checkIncluded(letters, candidate) &&
-                checkNotIncluded(letters, candidate),
-        );
-    });
-
-    return words;
+    return guesses.reduce(
+        (acc: string[], { letters }) =>
+            letters.length > 0
+                ? acc.filter(
+                      candidate =>
+                          checkCorrect(letters, candidate) &&
+                          checkIncluded(letters, candidate) &&
+                          checkNotIncluded(letters, candidate),
+                  )
+                : acc,
+        allWords,
+    );
 }
