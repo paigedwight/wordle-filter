@@ -11,10 +11,11 @@ function checkCorrect(letters: GuessLetter[], word: string): boolean {
 }
 
 function countLetters(dict: any, letter: string) {
-    return {
-        ...dict,
-        [letter]: (dict[letter] || 0) + 1,
-    };
+    if (dict[letter] === undefined) {
+        dict[letter] = 0;
+    }
+    dict[letter]++;
+    return dict;
 }
 
 function checkIncluded(letters: GuessLetter[], candidate: string): boolean {
