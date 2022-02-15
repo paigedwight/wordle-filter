@@ -39,10 +39,12 @@ function checkNotIncluded(letters: GuessLetter[], candidate: string): boolean {
     const candCounts = candidate.split('').reduce(countLetters, {});
 
     const remainingLetters = Object.keys(candCounts).reduce(
-        (acc: string[], key) =>
-            candCounts[key] - (guessCounts[key] || 0) > 0 && !acc.includes(key)
-                ? [...acc, key]
-                : acc,
+        (acc: string[], l) => {
+            if (candCounts[l] - (guessCounts[l] || 0) > 0 && !acc.includes(l)) {
+                acc.push(l);
+            }
+            return acc;
+        },
         [],
     );
 
