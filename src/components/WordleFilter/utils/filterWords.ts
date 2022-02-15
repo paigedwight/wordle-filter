@@ -1,19 +1,13 @@
 /** @format */
 
-import { range } from 'lodash';
 import { Guess, GuessLetter } from '../types';
 
 function checkCorrect(letters: GuessLetter[], word: string): boolean {
-    const pattern = range(5).reduce((acc, cur) => {
-        if (letters[cur] === undefined) {
-            return acc + '[a-z]';
-        } else {
-            const { letter, status } = letters[cur];
-            return acc + (status === 'correct' ? letter : '[a-z]');
-        }
-    }, '');
-    const regex = new RegExp('^' + pattern + '$');
-    return regex.test(word);
+    return letters.reduce(
+        (acc: boolean, { letter, status }, index) =>
+            acc && (status !== 'correct' || word[index] === letter),
+        true,
+    );
 }
 
 function countLetters(dict: any, letter: string) {
