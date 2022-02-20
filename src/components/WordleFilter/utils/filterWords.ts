@@ -18,7 +18,14 @@ function countLetters(dict: any, letter: string) {
     return dict;
 }
 
+function letterIsCharAt(word: string, status: string) {
+    return (letter: GuessLetter, at: number) =>
+        word.charAt(at) === letter.letter && letter.status === status;
+}
+
 function checkIncluded(letters: GuessLetter[], candidate: string): boolean {
+    if (letters.some(letterIsCharAt(candidate, 'included'))) return false;
+
     const guessCounts = letters
         .filter(({ status }) => status !== 'not-included')
         .reduce((acc: any, { letter }) => countLetters(acc, letter), {});
@@ -32,6 +39,8 @@ function checkIncluded(letters: GuessLetter[], candidate: string): boolean {
 }
 
 function checkNotIncluded(letters: GuessLetter[], candidate: string): boolean {
+    if (letters.some(letterIsCharAt(candidate, 'not-included'))) return false;
+
     const guessCounts = letters
         .filter(letter => letter.status !== 'not-included')
         .reduce((acc: any, { letter }) => countLetters(acc, letter), {});
