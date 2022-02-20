@@ -5,16 +5,13 @@ import { Guess, GuessLetter } from '../types';
 function checkCorrect(letters: GuessLetter[], word: string): boolean {
     return letters.reduce(
         (acc: boolean, { letter, status }, index) =>
-            acc && (status !== 'correct' || word[index] === letter),
+            acc && (status !== 'correct' || word.charAt(index) === letter),
         true,
     );
 }
 
 function countLetters(dict: any, letter: string) {
-    if (dict[letter] === undefined) {
-        dict[letter] = 0;
-    }
-    dict[letter]++;
+    dict[letter] = dict[letter] !== undefined ? dict[letter] + 1 : 1;
     return dict;
 }
 
@@ -28,7 +25,9 @@ function checkIncluded(letters: GuessLetter[], candidate: string): boolean {
 
     const guessCounts = letters
         .filter(({ status }) => status !== 'not-included')
-        .reduce((acc: any, { letter }) => countLetters(acc, letter), {});
+        .map(({ letter }) => letter)
+        .reduce(countLetters, {});
+
     const candCounts = candidate.split('').reduce(countLetters, {});
 
     return Object.keys(guessCounts).reduce(
@@ -43,7 +42,8 @@ function checkNotIncluded(letters: GuessLetter[], candidate: string): boolean {
 
     const guessCounts = letters
         .filter(letter => letter.status !== 'not-included')
-        .reduce((acc: any, { letter }) => countLetters(acc, letter), {});
+        .map(({ letter }) => letter)
+        .reduce(countLetters, {});
 
     const candCounts = candidate.split('').reduce(countLetters, {});
 
@@ -59,10 +59,8 @@ function checkNotIncluded(letters: GuessLetter[], candidate: string): boolean {
 
     const intersection = letters
         .filter(letter => letter.status === 'not-included')
-        .reduce(
-            (a: string[], { letter: l }) => (a.includes(l) ? a : [...a, l]),
-            [],
-        )
+        .map(({ letter }) => letter)
+        .reduce((a: string[], l: string) => (a.includes(l) ? a : [...a, l]), [])
         .filter((letter: string) => remainingLetters.includes(letter));
 
     return intersection.length === 0;
